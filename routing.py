@@ -1,19 +1,20 @@
 import igraph as graph
 class Route:
-    def __init__(self, routes=None, demands=0, cost=0):
+    def __init__(self, routes=None, demands=0, time=0, cost=0):
         self.routes = routes if routes is not None else []
         self.demands = demands
         self.cost = cost
+        self.time = time
 
     def __str__(self):
-        return f"{self.routes}, demanda: {self.demands}"
+        return f"{self.routes}, demanda: {self.demands}, tempo: {self.time}"
     
     def print_cost(self):
          return f"{self.routes}, custo: {self.cost}"
     
     
 
-def get_gain(graph: graph.Graph, demands)-> list[Route]:
+def get_gain(graph: graph.Graph, demands, times)-> list[Route]:
         cost = {}
         routes = []
         for v in graph.es:
@@ -21,32 +22,42 @@ def get_gain(graph: graph.Graph, demands)-> list[Route]:
                 cost[v.target] = v["peso"]
             else:
                 profit = cost[v.source] + cost[v.target] - v["peso"]
-                route = Route([v.source, v.target], demands[v.source - 1] + demands[v.target - 1], profit)
+                route = Route([v.source, v.target], demands[v.source - 1] + demands[v.target - 1], times[v.source - 1] + times[v.target - 1], profit)
                 routes.append(route)
             
         return sorted(routes, key=lambda route: route.cost, reverse=True)
 
 
-def solver(graph: graph.Graph, demands):
-    routes = get_gain(graph, demands)    
+def solver(graph: graph.Graph, demands, times):
+    
+    routes = get_gain(graph, demands, times)    
 
     i = 0
-    while i < len(routes):
+    while i < len(routes):   
         currentR = routes[i]
         j = 0
         while j < len(routes):
             targetR = routes[j]
             if(verify_fusion(currentR, targetR)):
-                
-                remove_member = common_member(currentR.routes, targetR.routes)
-                total_demand = (currentR.demands + targetR.demands) - demands[remove_member - 1]
+                print('Current: ', currentR)
+                print('Target:', targetR)
+                remove_members = common_member(currentR.routes, targetR.routes)
+                if( len(remove_members) < len(targetR.routes)):
+                    for member in remove_members:
+                        total_demand = (currentR.demands + targetR.demands) - demands[member - 1]
+                        total_time = (currentR.time + targetR.time) - times[member - 1]
 
-                if total_demand < 40:
-                    fusion_route = Route(makes_fusion(currentR.routes, targetR.routes), total_demand)
+                    if total_demand <= 60 and total_time <= 220:
+                        fusion_route = Route(makes_fusion(currentR.routes, targetR.routes), total_demand, total_time)
+                        print('\nFusão:', fusion_route)
+                        routes.remove(targetR)
+                        print('Removendo target: ', targetR)
+                        routes.remove(currentR)
+                        print('Removendo current: ', currentR)
+                        currentR = fusion_route
+                        routes.append(fusion_route)
+                else:
                     routes.remove(targetR)
-                    routes.remove(currentR)
-                    currentR = fusion_route
-                    routes.append(fusion_route)
             j+=1
         i+=1
     
@@ -68,21 +79,33 @@ def common_member(a, b):
     set_b = set(b)
 
     common_elements = set_a.intersection(set_b)
+    
 
     if common_elements:
-        return common_elements.pop()
+        return common_elements
     else:
         return 0
 
 def makes_fusion(a, b):
-    if a[0] == b[0]:
-        solution = b + a[1:]
-    elif a[0] == b[-1]:
-        solution = b + a[1:]
-    elif a[-1] == b[0]:
-        solution = a + b[1:]
-    else:
-        solution = a + b[:-1][::-1]
+    set_a = set(a)
+    set_b = set(b)
+
+    #list -> set
+    #set -> list
+
+    common_elements = set_a.intersection(set_b)
+    #print('COMMON ELEMENTS', common_elements)
+
+    for element in common_elements:
+        set_b.remove(element)
+
+    list_b = list(set_b)
+    #print('LIST B', list_b)
+
+    
+    solution = list_b + a
+    # verifica se tem ligação
+   
 
     return list(set(solution))
 

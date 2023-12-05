@@ -7,8 +7,6 @@ Integrantes:
 
 """
 
-
-
 import igraph as graph
 import routing
 
@@ -33,29 +31,26 @@ edge_weights = [
         10
     ]
 g.es['peso'] = edge_weights
-    
-demands = [10, 15, 18, 17, 3, 5, 9, 4, 6]
 
 
-all_routes = routing.solver(g, demands)
+
+demands = [10, 15, 18, 17, 3, 5, 2, 4, 6]
+time    = [14, 21, 16, 44, 23, 10, 34, 20, 18]
+
+
+all_routes = routing.solver(g, demands, times=time)
 print(f"Todas as Rotas: {len(all_routes)}")
 print_routes(all_routes)
 
 unique_routes = routing.get_unique_routes(all_routes)
-print(f"\nRotas unicas: {len(unique_routes)}")
-print_routes(unique_routes)
+#print(f"\nRotas unicas: {len(unique_routes)}")
+#print_routes(unique_routes)
 
 routes = routing.verify_routes(all_routes, len(demands))
-print(f"\nRotas necessárias: {len(routes)}")
-print_routes(routes)
+#print(f"\nRotas necessárias: {len(routes)}")
+#print_routes(routes)
 
 
-time_routes = routing.get_total_time(g, routes, 1)
-print(f"tempo para 1 carro: {max(time_routes)}")
 
-time_routes = routing.get_total_time(g, routes, 2)
-print(f"tempo para 2 carros: {time_routes} - tempo total: {max(time_routes)}")
 
-time_routes = routing.get_total_time(g, routes, 3)
-print(f"tempo para 3 carros: {time_routes} - tempo total: {max(time_routes)}")
 
