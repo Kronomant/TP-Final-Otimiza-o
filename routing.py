@@ -29,58 +29,41 @@ def get_gain(graph: graph.Graph, demands, times)-> list[Route]:
 
 
 def solver(graph: graph.Graph, demands, times):
-    
     routes = get_gain(graph, demands, times)
 
-    for route in routes:
-        print(route)    
-
     i = 0
-    while i < len(routes):   
+    while i < len(routes):
         currentR = routes[i]
-        print(currentR)
-        j = 1
-        while j < len(routes):
-            targetR = routes[j]
+        j = i + 1
 
-            
-            print('Current: ', currentR)
-            print('Target:', targetR)
+        while j < len(routes):
+            targetR = routes[j] 
             remove_members = common_member(currentR.routes, targetR.routes)
-            if(not set(targetR.routes).issubset(currentR.routes)):
-                
+
+            if not set(targetR.routes).issubset(currentR.routes):
                 total_demand = (currentR.demands + targetR.demands)
                 total_time = (currentR.time + targetR.time)
 
                 for member in remove_members:
-                    total_demand = total_demand -  demands[member - 1]
-                    total_time = total_time - times[member - 1]
+                    targetR.routes.remove(member)
+                    targetR.demands -= demands[member - 1]
+                    targetR.time -= times[member - 1]
+                    total_demand -= demands[member - 1]
+                    total_time -= times[member - 1]
 
                 if total_demand <= 60 and total_time <= 220:
                     fusion_route = Route(makes_fusion(currentR.routes, targetR.routes), total_demand, total_time)
-                    #print('\nFusão:', fusion_route)
                     routes.remove(targetR)
-                    #print('Removendo target: ', targetR)
-                    #print('Removendo current: ', currentR)
-                    if currentR in routes:
-                        index = routes.index(currentR)
-                        routes[index] = fusion_route
-                    
+                    routes[i] = fusion_route
                     currentR = fusion_route
-                    print('new current', currentR)
-                    
-            elif set(targetR.routes).issubset(currentR.routes): # caso o target tenha elementos que estão todos contidos em current remover
-                print('Removendo target else: ', targetR)
-                print('Current: ', currentR)
+                else:
+                    j += 1
+            elif set(targetR.routes) <= set(currentR.routes) and targetR.routes != currentR.routes:
                 routes.remove(targetR)
+            else:
+                j += 1
 
-            else: 
-                #print('Removendo target else2: ', targetR)
-                routes.remove(targetR)
-                
-            j+=1
-        i+=1
-
+        i += 1
 
     return routes
     
@@ -93,7 +76,6 @@ def common_member(a, b):
 
     common_elements = set_a.intersection(set_b)
     
-
     if common_elements:
         return common_elements
     else:

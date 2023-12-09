@@ -43,8 +43,8 @@ print(f"Todas as Rotas: {len(all_routes)}")
 print_routes(all_routes)
 
 unique_routes = routing.get_unique_routes(all_routes)
-#print(f"\nRotas unicas: {len(unique_routes)}")
-#print_routes(unique_routes)
+print(f"\nRotas unicas: {len(unique_routes)}")
+print_routes(unique_routes)
 
 routes = routing.verify_routes(all_routes, len(demands))
 #print(f"\nRotas necessárias: {len(routes)}")
