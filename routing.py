@@ -28,7 +28,7 @@ def get_gain(graph: graph.Graph, demands, times)-> list[Route]:
         return sorted(routes, key=lambda route: route.cost, reverse=True)
 
 
-def solver(graph: graph.Graph, demands, times):
+def solver(graph: graph.Graph, demands, times, limit_demand, limit_time):
     routes = get_gain(graph, demands, times)
 
     i = 0
@@ -51,7 +51,7 @@ def solver(graph: graph.Graph, demands, times):
                     total_demand -= demands[member - 1]
                     total_time -= times[member - 1]
 
-                if total_demand <= 60 and total_time <= 220:
+                if total_demand <= limit_demand and total_time <= limit_time:
                     fusion_route = Route(makes_fusion(currentR.routes, targetR.routes), total_demand, total_time)
                     routes.remove(targetR)
                     routes[i] = fusion_route
@@ -171,3 +171,35 @@ def get_total_time(graph:graph.Graph, routes: list[Route], num_cars: int):
     car_times = [sum(routes_times[i::num_cars]) for i in range(num_cars)]
 
     return car_times 
+
+def read_file_txt(file):
+    demands = []
+    times = []
+    edge_weights = []
+    try:
+        with open(file, 'r') as arquivo:
+            linha = arquivo.readline().split()
+            limit_demand = float(linha[0])
+            limit_time = float(linha[1])
+
+            linha = arquivo.readline().split()
+
+            for linha in arquivo:
+                if linha.strip() == "":
+                    break
+                dados = linha.split()
+                demands.append(float(dados[0]))
+                times.append(float(dados[1]))
+
+            for linha in arquivo:
+                if linha.strip() == "":
+                    break
+                
+                pesos = linha.split()
+                edge_weights.extend([int(pesos[0]), int(pesos[1]), float(pesos[2])])
+
+    except FileNotFoundError:
+        print(f"Arquivo {file} não encontrado.")
+        return None, None, None, None
+
+    return limit_demand, limit_time, demands, times, edge_weights
